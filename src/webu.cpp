@@ -201,7 +201,7 @@ static int webu_parseurl(struct ctx_webui *webui)
 {
     int retcd;
     char *tmpurl;
-    size_t  pos_slash1, pos_slash2;
+    size_t  pos_slash1, pos_slash2, webcontrol_base_path_len;
 
     /* Example:  /camid/cmd1/cmd2   */
     retcd = 0;
@@ -213,11 +213,13 @@ static int webu_parseurl(struct ctx_webui *webui)
         return -1;
     }
 
-    if (webui->url ==  "/favicon.ico") {
+    if (webui->url ==  webui->motapp->cam_list[0]->conf->webcontrol_base_path + "/favicon.ico") {
         return -1;
     }
 
     MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Sent url: %s"),webui->url.c_str());
+
+    webcontrol_base_path_len = webui->motapp->cam_list[0]->conf->webcontrol_base_path.length();
 
     tmpurl = (char*)mymalloc(webui->url.length()+1);
     memcpy(tmpurl, webui->url.c_str(), webui->url.length());
@@ -229,15 +231,20 @@ static int webu_parseurl(struct ctx_webui *webui)
 
     MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url: %s"),webui->url.c_str());
 
-    if (webui->url.length() == 1) {
+    if (webui->url.length() == webcontrol_base_path_len) {
         return 0;
     }
 
-    pos_slash1 = webui->url.find("/", 1);
+
+    pos_slash1 = webui->url.find("/", webcontrol_base_path_len + 1);
+
     if (pos_slash1 != std::string::npos) {
-        webui->uri_camid = webui->url.substr(1, pos_slash1 - 1);
+        webui->uri_camid = webui->url.substr(webcontrol_base_path_len + 1, pos_slash1 - (webcontrol_base_path_len + 1));
+
+	MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url cam id : %s"),webui->uri_camid.c_str());
     } else {
-        webui->uri_camid = webui->url.substr(1);
+        webui->uri_camid = webui->url.substr(webcontrol_base_path_len + 1);
+	MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Failed to decode url cam id from uri : %s"), webui->url.c_str());
         return 0;
     }
 
@@ -317,9 +324,9 @@ static void webu_hostname(struct ctx_webui *webui)
 
     hdr = MHD_lookup_connection_value(webui->connection, MHD_HEADER_KIND, MHD_HTTP_HEADER_HOST);
     if (hdr == NULL) {
-        webui->hostfull = "//localhost:" + std::to_string(webui->motapp->cam_list[0]->conf->webcontrol_port) + std::to_string(conf->web_base_path);
+        webui->hostfull = "//localhost:" + std::to_string(webui->motapp->cam_list[0]->conf->webcontrol_port) + webui->motapp->cam_list[0]->conf->webcontrol_base_path;
     } else {
-        webui->hostfull = "//" + std::string(hdr) + std::to_string(conf->web_base_path);
+        webui->hostfull = "//" + std::string(hdr) + webui->motapp->cam_list[0]->conf->webcontrol_base_path;
     }
 
     MOTION_LOG(DBG,TYPE_ALL, NO_ERRNO, _("Full Host:  %s"), webui->hostfull.c_str());
