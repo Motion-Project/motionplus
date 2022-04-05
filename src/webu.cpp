@@ -317,9 +317,9 @@ static void webu_hostname(struct ctx_webui *webui)
 
     hdr = MHD_lookup_connection_value(webui->connection, MHD_HEADER_KIND, MHD_HTTP_HEADER_HOST);
     if (hdr == NULL) {
-        webui->hostfull = "//localhost:" + std::to_string(webui->motapp->cam_list[0]->conf->webcontrol_port);
+        webui->hostfull = "//localhost:" + std::to_string(webui->motapp->cam_list[0]->conf->webcontrol_port) + std::to_string(conf->web_base_path);
     } else {
-        webui->hostfull = "//" + std::string(hdr);
+        webui->hostfull = "//" + std::string(hdr) + std::to_string(conf->web_base_path);
     }
 
     MOTION_LOG(DBG,TYPE_ALL, NO_ERRNO, _("Full Host:  %s"), webui->hostfull.c_str());
