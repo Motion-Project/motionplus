@@ -122,6 +122,7 @@
         <li>Enable the <a href="#OptDetail_Webcontrol" >web control</a> in the configuration file </li>
         <ul>
           <li> Specify a <a href="#webcontrol_port" >webcontrol_port</a></li>
+	  <li> Specify a <a href="#webcontrol_base_path" >webcontrol_base_path</a> if you want to access the ui from a path on your server other than / e.g. for http://myserver/motionplus, this parameter would be /motionplus (default is /)</li>
           <li> Optionally turn off <a href="#webcontrol_localhost" >webcontrol_localhost</a> if you want to view
                the webcontrol from a different computer</li>
           <li> Specify which parameters to show on the webcontrol via <a href="#webcontrol_parms" >webcontrol_parms</a></li>
@@ -1245,6 +1246,12 @@
           <td align="left"></td>
           <td align="left"><a href="#webcontrol_port" >webcontrol_port</a></td>
         </tr>
+	<tr>
+          <td align="left"><br /></td>
+	  <td align="left"></td>
+	  <td align="left"></td>
+          <td align="left"><a href="#webcontrol_base_path" >webcontrol_base_path</a></td>
+        </tr>
         <tr>
           <td align="left"><br /></td>
           <td align="left"></td>
@@ -1611,6 +1618,7 @@
             </tr>
             <tr>
               <td bgcolor="#edf4f9" ><a href="#webcontrol_html" >webcontrol_html</a> </td>
+	      <td bgcolor="#edf4f9" ><a href="#webcontrol_base_path" >webcontrol_base_path</a> </td>
             </tr>
             </tbody>
         </table>
@@ -3630,6 +3638,18 @@
         <p></p>
         Restrict the webcontrol of MotionPlus to the localhost.  This option must be 
         placed in motionplus.conf and not in a camera config file.
+        <p></p>
+
+        <h3><a name="webcontrol_base_path"></a> webcontrol_base_path </h3>
+        <p></p>
+        <ul>
+          <li> Type: String</li>
+          <li> Valid values: Any valid url path</li>
+          <li> Default: /</li>
+	</ul>
+        <p></p>
+        Change the base path for the web UI. This option must be placed in motionplus.conf
+	and not in a camera config file.
         <p></p>
 
         <h3><a name="webcontrol_parms"></a> webcontrol_parms </h3>
