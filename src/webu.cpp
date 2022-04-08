@@ -223,20 +223,9 @@ static int webu_parseurl(struct ctx_webui *webui)
     webui->uri_camid = "";
     
 	webcontrol_base_path = webui->motapp->cam_list[0]->conf->webcontrol_base_path;
+	webcontrol_base_path_len = webcontrol_base_path.length();
 	
-    if (webui->url.length() == 0) {
-    	// the root of the web UI will be served 
-        return -1;
-    }
-
-    if (webui->url ==  webcontrol_base_path + "favicon.ico") {
-        //N.B though this resource is explicitly defined, others will result in -1 return too unless they look like a valid camera command string
-        return -1;
-    }
-
     MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Sent url: %s"),webui->url.c_str());
-
-    webcontrol_base_path_len = webcontrol_base_path.length();
 
 	// decode all HTML escape characters in the url 
 	
@@ -251,18 +240,22 @@ static int webu_parseurl(struct ctx_webui *webui)
     MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url: %s"),webui->url.c_str());
 
 
-    if (webui->url.length() == webcontrol_base_path_len) {
-    	// this is not a camera command uri
+	if (webui->url.length() <= webcontrol_base_path_len) {
+    	// the root of the web UI will be served 
         return -1;
     }
 
-
+    if (webui->url ==  webcontrol_base_path + "favicon.ico") {
+        // This resource is explicitly defined (because it is never served to the client hence it is not inserted into uri_camid)
+        return -1;
+    }
+    
     pos_slash1 = webui->url.find("/", webcontrol_base_path_len + 1);
 
     if (pos_slash1 != std::string::npos) {
+    	// NOTE: this could be config.json or some other static resource too, it isn't necessarily the id of a camera
         webui->uri_camid = webui->url.substr(webcontrol_base_path_len + 1, pos_slash1 - (webcontrol_base_path_len + 1));
         MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url cam id : %s"),webui->uri_camid.c_str());
-        // NOTE: this could be config.json or some other static resource too
     } else {
         webui->uri_camid = webui->url.substr(webcontrol_base_path_len + 1);
 	    MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Failed to decode url cam id from uri : %s"), webui->url.c_str());
