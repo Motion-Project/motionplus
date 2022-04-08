@@ -196,31 +196,50 @@ static void webu_parms_edit(struct ctx_webui *webui)
 
 }
 
-/* Extract the camid and cmds from the url */
+/* Extract the camid and cmds from the url
+ *
+ * Supported URI examples (webcontrol_base_path presumed to be / for each of these):
+ * /
+ * /favicon.ico
+ * /<static_resource_name>
+ * /<static_resource_name>/
+ * /camID/cmd1
+ * /camID/cmd1/
+ * /camID/cmd1/cmd2
+ *
+ * returns:
+ *  0 : The uri is a command for a camera (and has been parsed into webui->uri_camid, webui->uri_cmd1, and webui->uri_cmd2 as appropriate)
+ * -1 : For anything else
+ */
 static int webu_parseurl(struct ctx_webui *webui)
 {
-    int retcd;
     char *tmpurl;
+    std::string webcontrol_base_path;
     size_t  pos_slash1, pos_slash2, webcontrol_base_path_len;
 
-    /* Example:  /camid/cmd1/cmd2   */
-    retcd = 0;
+    /* Example:  /camid/cmd1/cmd2 */
+    
+    // clear 'uri_camid' variable (also used to identify static resource config.json, not just camera IDs)
     webui->uri_camid = "";
-    webui->uri_cmd1 = "";
-    webui->uri_cmd2 = "";
-
+    
+	webcontrol_base_path = webui->motapp->cam_list[0]->conf->webcontrol_base_path;
+	
     if (webui->url.length() == 0) {
+    	// the root of the web UI will be served 
         return -1;
     }
 
-    if (webui->url ==  webui->motapp->cam_list[0]->conf->webcontrol_base_path + "/favicon.ico") {
+    if (webui->url ==  webcontrol_base_path + "favicon.ico") {
+        //N.B though this resource is explicitly defined, others will result in -1 return too unless they look like a valid camera command string
         return -1;
     }
 
     MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Sent url: %s"),webui->url.c_str());
 
-    webcontrol_base_path_len = webui->motapp->cam_list[0]->conf->webcontrol_base_path.length();
+    webcontrol_base_path_len = webcontrol_base_path.length();
 
+	// decode all HTML escape characters in the url 
+	
     tmpurl = (char*)mymalloc(webui->url.length()+1);
     memcpy(tmpurl, webui->url.c_str(), webui->url.length());
 
@@ -231,8 +250,10 @@ static int webu_parseurl(struct ctx_webui *webui)
 
     MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url: %s"),webui->url.c_str());
 
+
     if (webui->url.length() == webcontrol_base_path_len) {
-        return 0;
+    	// this is not a camera command uri
+        return -1;
     }
 
 
@@ -240,41 +261,50 @@ static int webu_parseurl(struct ctx_webui *webui)
 
     if (pos_slash1 != std::string::npos) {
         webui->uri_camid = webui->url.substr(webcontrol_base_path_len + 1, pos_slash1 - (webcontrol_base_path_len + 1));
-
-	MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url cam id : %s"),webui->uri_camid.c_str());
+        MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Decoded url cam id : %s"),webui->uri_camid.c_str());
+        // NOTE: this could be config.json or some other static resource too
     } else {
         webui->uri_camid = webui->url.substr(webcontrol_base_path_len + 1);
-	MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Failed to decode url cam id from uri : %s"), webui->url.c_str());
-        return 0;
+	    MOTION_LOG(DBG, TYPE_STREAM, NO_ERRNO, _("Failed to decode url cam id from uri : %s"), webui->url.c_str());
+        return -1;
     }
 
     pos_slash1++;
     if (pos_slash1 >= webui->url.length()) {
-        return 0;
+    	// If there are no more parts to the URI path, return
+    	// if the url is just a cam_id or static resource e.g. https://myserver/config.json OR https://myserver/101 where 101 is the ID# of a camera
+        return -1;
     }
 
+	// extract the command(s) for the camera from the URI 
+	
     pos_slash2 = webui->url.find("/", pos_slash1);
     if (pos_slash2 != std::string::npos) {
+    	// is not last part of the uri, extract just this part
         webui->uri_cmd1 = webui->url.substr(pos_slash1, pos_slash2 - pos_slash1);
     } else {
+    	// is last part of the uri, copy remainder of the uri
         webui->uri_cmd1 = webui->url.substr(pos_slash1);
         return 0;
     }
 
     pos_slash1 = ++pos_slash2;
     if (pos_slash1 >= webui->url.length()) {
+    	// there is no command after the trailing uri '/' (e.g. /camID/cmd1/ ) 
         return 0;
     }
 
     pos_slash2 = webui->url.find("/", pos_slash1);
     if (pos_slash2 != std::string::npos) {
+        // is not last part of the uri, extract just this part
         webui->uri_cmd2 = webui->url.substr(pos_slash1, pos_slash2 - pos_slash1);
     } else {
+        // is last part of the uri, copy remainder of the uri
         webui->uri_cmd2 = webui->url.substr(pos_slash1);
         return 0;
     }
 
-    return retcd;
+    return 0;
 
 }
 
@@ -830,8 +860,7 @@ static mhdrslt webu_answer_get(struct ctx_webui *webui)
             retcd = webu_mhd_send(webui);
         }
 
-    } else if ((webui->uri_camid == "config.json") ||
-               (webui->uri_cmd1 == "config.json")) {
+    } else if (webui->uri_camid == "config.json") {
 
         pthread_mutex_lock(&webui->motapp->mutex_post);
             webu_json_config(webui);
@@ -961,10 +990,11 @@ static void *webu_mhd_init(void *cls, const char *uri, struct MHD_Connection *co
     webui->url.assign(uri);
 
     retcd = webu_parseurl(webui);
-    if (retcd != 0) {
-        webui->uri_camid = "";
-        webui->uri_cmd1 = "";
-        webui->url = "";
+    
+    if( retcd != 0 ) {
+	    // clear the command (The URI requested is not for a camera).
+	    webui->uri_cmd1 = "";
+	    webui->uri_cmd2 = "";
     }
 
     webu_parms_edit(webui);
