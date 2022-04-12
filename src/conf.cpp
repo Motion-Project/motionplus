@@ -2116,12 +2116,9 @@ static void conf_edit_webcontrol_port(struct ctx_cam *cam, std::string &parm, en
 static void conf_edit_webcontrol_base_path(struct ctx_cam *cam, std::string &parm, enum PARM_ACT pact)
 {
     if (pact == PARM_ACT_DFLT) {
-        cam->conf->webcontrol_base_path = "/";
+        cam->conf->webcontrol_base_path = "";
     } else if (pact == PARM_ACT_SET) {
         cam->conf->webcontrol_base_path = parm;
-        if ( cam->conf->webcontrol_base_path.length() == 0 ) {
-		  cam->conf->webcontrol_base_path = "/";
-		}
     } else if (pact == PARM_ACT_GET) {
         parm = cam->conf->webcontrol_base_path;
     }

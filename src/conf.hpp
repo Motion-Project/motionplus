@@ -20,6 +20,7 @@
 
 #ifndef _INCLUDE_CONF_HPP_
 #define _INCLUDE_CONF_HPP_
+#include <string>
 
     struct ctx_cam;
     struct ctx_motapp;
