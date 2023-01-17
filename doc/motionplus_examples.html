@@ -54,6 +54,7 @@
         <li> <a href="#haar_setup">Haar setup</a></li>
         <li> <a href="#hog_setup">HOG setup</a></li>
         <li> <a href="#dnn_setup">DNN setup</a></li>
+        <li> <a href="#docker">Docker</a></li>
         
         <p></p>
         <p></p>
@@ -229,6 +230,27 @@
           <li><code>framework</code>Default: none | </li>        
         </ul>
 
+      </ul>
+
+      <h3><a name="docker"></a>Docker</h3>
+      <ul>
+        <li> Build docker image locally <a href="motionplus_build.html#Docker_Build"> Building docker image from source </a></li>
+        <li>The configuration directory and files must be mounted unless you want to use the default configuration files.</li>
+        <li>Run Motionplus container </li>
+        <p></p>
+        <code>
+          docker run \<br>
+          --name motionplus \<br>
+          -d \<br>
+          --replace \<br>
+          -e TZ="America/New_York" \<br>
+          -v /usr/local/etc/motion:/usr/local/etc/motionplus \ # Configuration files<br>
+          -v /var/data/motionplus:/var/lib/motionplus \ # Movie files<br>
+          -p 8080:8080 \<br>
+          --device /dev/dri:/dev/dri \ # Video card device files<br>
+          localhost/"$USER"/motionplus:latest
+        </code>
+        <p></p>
       </ul>
 
  
