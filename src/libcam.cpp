@@ -339,7 +339,14 @@ void cls_libcam::cam_config_control_item(char *pname, char *pvalue)
         controls.set(controls::FocusFoM, atoi(pvalue));
     }
     if (mystrceq(pname,"ScalerCrop")) {
-        MOTPLS_LOG(NTC, TYPE_VIDEO, NO_ERRNO, "ScalerCrop not implemented(Rect x-y-h-w)");
+        char *x, *y, *w, *h;
+        x = strtok(pvalue, "-");
+        y = strtok(0, "-");
+        w = strtok(0, "-");
+        h = strtok(0, "-");
+        if (h != NULL) {
+    		controls.set(controls::ScalerCrop, Rectangle(atoi(x),atoi(y),atoi(w),atoi(h)) );    
+        }
     }
     if (mystrceq(pname,"DigitalGain")) {
         controls.set(controls::DigitalGain, atof(pvalue));
