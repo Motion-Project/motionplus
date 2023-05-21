@@ -148,7 +148,7 @@ class cls_libcam;
 #define UPDATE_REF_FRAME  1
 #define RESET_REF_FRAME   2
 
-#define AVGCNT            30
+#define AVGCNT            3  
 
 /*
  * Structure to hold images information
