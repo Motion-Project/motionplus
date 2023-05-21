@@ -22,6 +22,8 @@
 #ifndef _INCLUDE_MOTION_LOOP_HPP_
 #define _INCLUDE_MOTION_LOOP_HPP_
 
+#define MAX_RING_PROCESS_LOOPS       3
+
 void *mlp_main(void *arg);
 void mlp_cleanup(ctx_dev *cam);
 

@@ -127,6 +127,8 @@ static void mlp_ring_process_debug(ctx_dev *cam)
 static void mlp_ring_process(ctx_dev *cam)
 {
     ctx_image_data *saved_current_image = cam->current_image;
+    
+    int count = 0;
 
     do {
         if ((cam->imgs.image_ring[cam->imgs.ring_out].flags & (IMAGE_SAVE | IMAGE_SAVED)) != IMAGE_SAVE) {
@@ -163,8 +165,10 @@ static void mlp_ring_process(ctx_dev *cam)
         if (++cam->imgs.ring_out >= cam->imgs.ring_size) {
             cam->imgs.ring_out = 0;
         }
+        count++;
+        /*Use count < MAX_RING_PROCESS_LOOPS to avoid too many loops at a time, delaying image capture*/
 
-    } while (cam->imgs.ring_out != cam->imgs.ring_in);
+    } while ((cam->imgs.ring_out != cam->imgs.ring_in) && (count < MAX_RING_PROCESS_LOOPS));
 
     cam->current_image = saved_current_image;
 }
