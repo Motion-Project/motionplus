@@ -19,7 +19,7 @@
 #########################################################################################
 DEBUSERNAME=$1
 DEBUSEREMAIL=$2
-GITBRANCH=dev
+GITBRANCH=master
 INSTALLPKG=$4
 ARCH=$5
 BASEDIR=$(pwd)
