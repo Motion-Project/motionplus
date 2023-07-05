@@ -1289,6 +1289,8 @@ void util_exec_command(ctx_dev *cam, const char *command, char *filename, int fi
         mystrftime(cam, stamp, sizeof(stamp), command, &cam->current_image->imgts, filename, filetype);
     }
 
+    // Tells the OS that we will not be waiting for this forks return code and it can be discarded immediately after it exits
+    signal(SIGCHLD,SIG_IGN);
     if (!fork()) {
         /* Detach from parent */
         setsid();
