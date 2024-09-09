@@ -1,3 +1,5 @@
+Summary of changes for version 0.2.2 are below
+    * Revisions for newer versions of ffmpeg.
 Summary of changes for version 0.2.1 are below
     * Specify the stride for libcamera.
     * Fix processing when no libcamera devices attached.
