@@ -713,7 +713,14 @@ char* mytranslate_text(const char *msgid, int setnls)
  *  These are designed to be extremely simple version specific
  *  variants of the libav functions.
  ****************************************************************************/
-
+void myframe_key(AVFrame *frame)
+{
+    #if (MYFFVER < 60016)
+        frame->key_frame = 1;
+    #else
+        frame->flags |= AV_FRAME_FLAG_KEY;
+    #endif
+}
 /*********************************************/
 AVFrame *myframe_alloc(void)
 {

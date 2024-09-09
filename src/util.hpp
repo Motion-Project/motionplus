@@ -78,6 +78,12 @@
     typedef AVCodec myAVCodec; /* Version independent definition for AVCodec*/
 #endif
 
+#if (MYFFVER <= 60016)
+    typedef uint8_t myuint;         /* Version independent uint */
+#else
+    typedef const uint8_t myuint;   /* Version independent uint */
+#endif
+
 #ifdef HAVE_GETTEXT
     #include <libintl.h>
     extern int  _nl_msg_cat_cntr;    /* Required for changing the locale dynamically */
@@ -128,6 +134,7 @@
     void mytrim(std::string &parm);
     void myunquote(std::string &parm);
 
+    void myframe_key(AVFrame *frame);
     AVFrame *myframe_alloc(void);
     void myframe_free(AVFrame *frame);
     void mypacket_free(AVPacket *pkt);

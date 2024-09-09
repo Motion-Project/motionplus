@@ -315,10 +315,7 @@ static int movie_encode_video(ctx_movie *movie)
         // Encoder did not provide metadata, set it up manually
         movie->pkt->size = retcd;
         movie->pkt->data = video_outbuf;
-
-        if (movie->picture->key_frame == 1) {
-            movie->pkt->flags |= AV_PKT_FLAG_KEY;
-        }
+        myframe_key(movie->picture);
 
         movie->pkt->pts = movie->picture->pts;
         movie->pkt->dts = movie->pkt->pts;
@@ -1445,11 +1442,10 @@ int movie_put_image(ctx_movie *movie, ctx_image_data *img_data, const struct tim
         movie->gop_cnt ++;
         if (movie->gop_cnt == movie->ctx_codec->gop_size ) {
             movie->picture->pict_type = AV_PICTURE_TYPE_I;
-            movie->picture->key_frame = 1;
+            myframe_key(movie->picture);
             movie->gop_cnt = 0;
         } else {
             movie->picture->pict_type = AV_PICTURE_TYPE_P;
-            movie->picture->key_frame = 0;
         }
 
         /* A return code of -2 is thrown by the put_frame
