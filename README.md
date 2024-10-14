@@ -15,7 +15,7 @@ The following are some of the things that are different from Motion.
 - Additional primary detection parameters
 - Sound recording from network camera sources
 - ROI pictures for output or secondary detection
-- Enhanced web contorl
+- Enhanced web control
   - Only needs a single port for all camera video streams and controls
   - Consolidated stream(a single image) showing all cameras
   - List/download movies
